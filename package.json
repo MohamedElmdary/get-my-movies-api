@@ -24,6 +24,7 @@
     "@nestjs/common": "^7.0.0",
     "@nestjs/core": "^7.0.0",
     "@nestjs/platform-express": "^7.0.0",
+    "@nestjs/serve-static": "^2.1.0",
     "axios": "^0.19.2",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
