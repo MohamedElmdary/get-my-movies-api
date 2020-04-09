@@ -11,6 +11,6 @@ async function bootstrap() {
     .use(helmet())
     .use(compression());
 
-  await app.listen(6825);
+  await app.listen(process.env.PORT || 6825);
 }
 bootstrap();
