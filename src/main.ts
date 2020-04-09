@@ -6,12 +6,11 @@ import * as cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  if (!process.env.production) {
-    app.use(cors());
-  }
+  app
+    .use(cors())
+    .use(helmet())
+    .use(compression());
 
-  app.use(helmet()).use(compression());
-
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(6825);
 }
 bootstrap();
