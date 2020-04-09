@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  Catch,
   ServiceUnavailableException,
   NotFoundException,
 } from '@nestjs/common';
