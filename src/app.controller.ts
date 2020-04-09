@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Catch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Catch,
+  ServiceUnavailableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { EGYBEST_API } from './apis';
 import axios from 'axios';
 import { AppService } from './app.service';
@@ -59,33 +66,42 @@ export class AppController {
 
   @Get('/download/:call/:auth')
   async downloadApi(@Param('call') call: string, @Param('auth') auth: string) {
-    if (!call.length || !auth.length) {
-      throw new Error('Invalid Request!');
+    try {
+      if (!call.length || !auth.length) {
+        throw new Error('Invalid Request!');
+      }
+      const { browser, page } = await this.appService.launchBrowser();
+      await page.goto(
+        EGYBEST_API.movieRedirect(`/api?call=${call}&auth=${auth}`),
+      );
+      await page.evaluate(async () => {
+        (document.querySelector('.bigbutton') as any).click();
+      });
+      await page.waitForRequest((req: any) =>
+        req.url().includes('/cv.php?verify='),
+      );
+      await page.waitForResponse(res => res.url().includes('/cv.php?verify='));
+      const url = await page.evaluate(() => {
+        return window.location.href;
+      });
+      await page.goto(url + '&r');
+      const downloadLink = await page.evaluate(() => {
+        return document.querySelector('.bigbutton').getAttribute('href');
+      });
+      browser
+        .close()
+        .then()
+        .catch(() => null);
+      return { link: downloadLink };
+    } catch {
+      throw new NotFoundException();
     }
-    const { browser, page } = await this.appService.launchBrowser();
-    await page.goto(
-      EGYBEST_API.movieRedirect(`/api?call=${call}&auth=${auth}`),
+  }
+
+  @Get('/qualities/series/:name')
+  async qualitiesSeriesApi() {
+    throw new ServiceUnavailableException(
+      'Currently, We Are Not Supporting Series.',
     );
-    await page.evaluate(async () => {
-      (document.querySelector('.bigbutton') as any).click();
-    });
-    await page.waitForRequest((req: any) =>
-      req.url().includes('https://vidstream.kim/cv.php?verify='),
-    );
-    await page.waitForResponse(res =>
-      res.url().includes('https://vidstream.kim/cv.php?verify='),
-    );
-    const url = await page.evaluate(() => {
-      return window.location.href;
-    });
-    await page.goto(url + '&r');
-    const downloadLink = await page.evaluate(() => {
-      return document.querySelector('.bigbutton').getAttribute('href');
-    });
-    browser
-      .close()
-      .then()
-      .catch(() => null);
-    return downloadLink;
   }
 }
