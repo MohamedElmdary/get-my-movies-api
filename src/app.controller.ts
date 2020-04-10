@@ -73,7 +73,7 @@ export class AppController {
       await page.goto(
         EGYBEST_API.movieRedirect(`/api?call=${call}&auth=${auth}`),
       );
-      await page.evaluate(async () => {
+      await page.evaluate(() => {
         (document.querySelector('.bigbutton') as any).click();
       });
       await page.waitForRequest((req: any) =>
